@@ -27,7 +27,4 @@ cat resources/host/batch_header.sh > benchmarks/${benchmark}/batch.sh
 cat resources/host/inputs.sh >> benchmarks/${benchmark}/batch.sh
 cat benchmarks/${benchmark}/main.sh >> benchmarks/${benchmark}/batch.sh
 
-
-${sshcmd} mkdir -p ${resource_jobdir}
-${sshcmd} mkdir -p ${resource_jobdir}
 rsync -avzq -e 'ssh -o StrictHostKeyChecking=no' --rsync-path="mkdir -p ${resource_jobdir} && rsync" benchmarks/ ${resource_publicIp}:${resource_jobdir}/
