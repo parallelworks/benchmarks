@@ -28,4 +28,4 @@ cat resources/host/batch_header.sh > benchmarks/${benchmark}/batch.sh
 cat resources/host/inputs.sh >> benchmarks/${benchmark}/batch.sh
 cat benchmarks/${benchmark}/main.sh >> benchmarks/${benchmark}/batch.sh
 
-rsync -avzq -e 'ssh -o StrictHostKeyChecking=no' --rsync-path="mkdir -p ${resource_jobdir}/benchmarks/ && rsync" benchmarks/${benchmark} ${resource_publicIp}:${resource_jobdir}/
+rsync -avzq -e 'ssh -o StrictHostKeyChecking=no' --rsync-path="mkdir -p ${resource_jobdir}/benchmarks/ && rsync" benchmarks/${benchmark} ${resource_publicIp}:${resource_jobdir}/benchmarks/
