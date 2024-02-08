@@ -1,0 +1,62 @@
+<tool id='NA' name='NA'>
+  <command interpreter='bash'>main.sh</command>
+  <inputs>
+    <param 
+      name='benchmark' 
+      type='select' 
+      label='Select benchmarks to run' 
+      help=''   
+      multiple='false'>
+          <option value="ior-standard" selected="true">ior-standard</option>
+          <option value="ior-minimal">ior-minimal</option>
+    </param>
+    <section name='pwrl_host' type='section' title='Resource Configuration' expanded='true'>
+      <param 
+        name='resource' 
+        type='computeResource' 
+        label='Resource' 
+        hideUserWorkspace='true' 
+        help='Resource to run the benchmark'>
+      </param>
+      <param 
+        name='jobschedulertype' 
+        label='Only SLURM is supported for now' 
+        type='hidden' 
+        value='SLURM'  
+      ></param>
+      <param 
+        name='_sch__dd_partition_e_' 
+        label='SLURM partition' 
+        type='text' 
+        help='Partition to submit the benchmark. Leave empty to let SLURM pick the optimal option.' 
+        value=''
+        depends_on='benchmark'
+        show_if="['ior-standard', 'ior-minimal']"
+      ></param>
+      <param 
+        name='_sch__dd_ntasks_d_per_node_e_' 
+        label='Tasks per node' 
+        type='integer' 
+        min="1" 
+        max="100" 
+        help='--ntasks-per-node=value slurm directive' 
+        value='4'
+        depends_on='benchmark'
+        show_if="['ior-standard', 'ior-minimal']"
+    ></param>
+    <param 
+        name='_sch__dd_nodes_e_' 
+        label='Number of nodes' 
+        type='integer' 
+        min="1" 
+        max="100" 
+        help='--nodes=value slurm directive' 
+        value='10'
+        depends_on='benchmark'
+        show_if="['ior-standard', 'ior-minimal']"
+    ></param>
+    </section>   
+  </inputs>
+  <outputs>
+  </outputs>
+</tool>
