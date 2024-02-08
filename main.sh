@@ -21,6 +21,7 @@ if ! [ -f "resources/host/inputs.sh" ]; then
     echo "ERROR - Missing file ./resources/host/inputs.sh - Resource wrapper failed"
 fi
 
+source resources/host/inputs.sh
 
 echo; echo; echo CREATING JOB SCRIPT ${PWD}/benchmark.sh
 cat resources/host/batch_header.sh > benchmarks/${benchmark}/batch.sh
