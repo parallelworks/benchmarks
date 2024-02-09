@@ -11,6 +11,7 @@
           <option value="ior-standard" selected="true">ior-standard</option>
           <option value="ior-minimal">ior-minimal</option>
           <option value="mdtest-standard">mdtest-standard</option>
+          <option value="mdtest-minimal">mdtest-minimal</option>
     </param>
     <section name='pwrl_host' type='section' title='Resource Configuration' expanded='true'>
       <param 
@@ -32,7 +33,7 @@
         value='/home/__USER__/' 
         help='The benchmark is executed in a subdirectory within the selected root directory' 
         depends_on='benchmark'
-        show_if="['ior-standard', 'ior-minimal', 'mdtest-standard']"
+        show_if="['ior-standard', 'ior-minimal', 'mdtest-standard', 'mdtest-minimal']"
         required="true"
       ></param>
       <param 
@@ -44,7 +45,7 @@
         label='Compile with lustre?' 
         help='If yes is selected, the IOR benchmark is compiled with lustre'
         depends_on='benchmark'
-        show_if="['ior-standard', 'ior-minimal', 'mdtest-standard']"
+        show_if="['ior-standard', 'ior-minimal', 'mdtest-standard', 'mdtest-minimal']"
       ></param>
       <param 
         name='spack_install_intel_mpi' 
@@ -55,7 +56,7 @@
         label='Install Intel-OneAPI-MPI?' 
         help='If yes is selected, the job install intel-oneapi-mpi. Otherwise, you must provide a command to load MPI.'
         depends_on='benchmark'
-        show_if="['ior-standard', 'ior-minimal', 'mdtest-standard']"
+        show_if="['ior-standard', 'ior-minimal', 'mdtest-standard', 'mdtest-minimal']"
       ></param>
       <param name='load_mpi' 
         label='Command to load MPI' 
@@ -73,7 +74,7 @@
         help='Partition to submit the benchmark. Leave empty to let SLURM pick the optimal option.' 
         value=''
         depends_on='benchmark'
-        show_if="['ior-standard', 'ior-minimal', 'mdtest-standard']"
+        show_if="['ior-standard', 'ior-minimal', 'mdtest-standard', 'mdtest-minimal']"
       ></param>
       <param 
         name='_sch__dd_ntasks_d_per_d_node_e_' 
@@ -84,7 +85,7 @@
         help='--ntasks-per-node=value slurm directive' 
         value='4'
         depends_on='benchmark'
-        show_if="['ior-standard', 'ior-minimal', 'mdtest-standard']"
+        show_if="['ior-standard', 'ior-minimal', 'mdtest-standard', 'mdtest-minimal']"
     ></param>
     <param 
         name='_sch__dd_nodes_e_' 
@@ -95,7 +96,7 @@
         help='--nodes=value slurm directive' 
         value='10'
         depends_on='benchmark'
-        show_if="['ior-standard', 'ior-minimal', 'mdtest-standard']"
+        show_if="['ior-standard', 'ior-minimal', 'mdtest-standard', 'mdtest-minimal']"
     ></param>
     </section>   
   </inputs>
