@@ -48,6 +48,7 @@ rsync -avzq -e 'ssh -o StrictHostKeyChecking=no' --rsync-path="mkdir -p ${resour
 ############################################################################################################
 echo; echo; echo RUNNING JOB SCRIPT ${resource_publicIp}:${resource_jobdir}/benchmarks/${benchmark}/batch.sh
 # Submit job and get job id
+export sshcmd="ssh -o StrictHostKeyChecking=no ${resource_publicIp}"
 if [[ ${jobschedulertype} == "SLURM" ]]; then
     jobid=$($sshcmd ${submit_cmd} ${resource_jobdir}/benchmarks/${benchmark}/batch.sh | tail -1 | awk -F ' ' '{print $4}')
 elif [[ ${jobschedulertype} == "PBS" ]]; then
