@@ -8,11 +8,11 @@
       label='Select benchmarks to run' 
       help=''   
       multiple='false'>
-          <option value="ior-standard" selected="true">ior-standard</option>
+          <option value="ibm-mpi1-all-to-all" selected="true">ibm-mpi1-all-to-all</option>
+          <option value="ior-standard">ior-standard</option>
           <option value="ior-minimal">ior-minimal</option>
           <option value="mdtest-standard">mdtest-standard</option>
           <option value="mdtest-minimal">mdtest-minimal</option>
-          <option value="ibm-mpi1-all-to-all">ibm-mpi1-all-to-all</option>
     </param>
     <section name='pwrl_host' type='section' title='Resource Configuration' expanded='true'>
       <param 
