@@ -66,6 +66,6 @@ echo "#!/bin/bash" > cancel.sh
 echo "${sshcmd} ${cancel_cmd} ${jobid}" >> cancel.sh
 chmod +x cancel.sh
 
-############################################################################################################
+#########################################
 echo; echo; echo WAITING FOR JOB ${jobid}
 wait_job
