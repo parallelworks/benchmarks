@@ -22,14 +22,12 @@ fi
 
 if [[ ${spack_install_intel_mpi} == true ]]; then
     git clone -c feature.manyFiles=true https://github.com/spack/spack.git
-    . $HOME/spack/share/spack/setup-env.sh
+    . ${PWD}/spack/share/spack/setup-env.sh
     spack install intel-oneapi-mpi intel-oneapi-compilers
     load_mpi="spack load intel-oneapi-mpi intel-oneapi-compilers"
 fi
 
 eval ${load_mpi}
-
-
 
 mkdir -p ${benchmark_dir}
 # git clone https://github.com/hpc/ior.git ior

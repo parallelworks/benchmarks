@@ -1,5 +1,7 @@
 #!/bin/bash
+source utils/workflow-libs.sh
 
+############################################
 echo; echo; echo  PROCESSING RESOURCE INPUTS
 source /etc/profile.d/parallelworks.sh
 source /etc/profile.d/parallelworks-env.sh
@@ -24,13 +26,26 @@ fi
 
 source resources/host/inputs.sh
 
+########################################################
 echo; echo; echo CREATING JOB SCRIPT ${PWD}/benchmark.sh
+# SLURM / PBS header created by input_form_resource_wrapper.py
 cat resources/host/batch_header.sh > benchmarks/${benchmark}/batch.sh
+
+# Input variables created by input_form_resource_wrapper.py from inputs.json
 cat resources/host/inputs.sh >> benchmarks/${benchmark}/batch.sh
+
+# Streaming
+# - Copy to benchmark dir which is transferred to the resource
+cp utils/stream.sh benchmarks/${benchmark}/
+echo "bash ${resource_jobdir}/benchmarks/${benchmark}/stream.sh &" >> benchmarks/${benchmark}/batch.sh
+
+# Benchmark main script
 cat benchmarks/${benchmark}/main.sh >> benchmarks/${benchmark}/batch.sh
 
+# Transfer benchmark directory to the resource's job directory
 rsync -avzq -e 'ssh -o StrictHostKeyChecking=no' --rsync-path="mkdir -p ${resource_jobdir}/benchmarks/ && rsync" benchmarks/${benchmark} ${resource_publicIp}:${resource_jobdir}/benchmarks/
 
+############################################################################################################
 echo; echo; echo RUNNING JOB SCRIPT ${resource_publicIp}:${resource_jobdir}/benchmarks/${benchmark}/batch.sh
 # Submit job and get job id
 if [[ ${jobschedulertype} == "SLURM" ]]; then
@@ -43,3 +58,13 @@ if [[ "${jobid}" == "" ]];then
     echo "ERROR submitting job - exiting the workflow"
     exit 1
 fi
+
+##########################################################
+echo; echo; echo PREPARING CANCEL SCRIPT FOR JOB ${jobid}
+echo "#!/bin/bash" > cancel.sh
+echo "${sshcmd} ${cancel_cmd} ${jobid}" >> cancel.sh
+chmod +x cancel.sh
+
+############################################################################################################
+echo; echo; echo WAITING FOR JOB ${jobid}
+wait_job
