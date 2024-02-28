@@ -84,7 +84,8 @@ def plot_columns_from_csv(csv_path: str):
         # Convert to plotly figure
         fig = plt.gcf()
         plotly_fig = tls.mpl_to_plotly(fig)
-        filename = os.path.join(directory, f'{column}.html')
+        clean_column_name = column.replace('/','-').replace(' ','')
+        filename = os.path.join(directory, f'{clean_column_name}.html')
         py.plot(plotly_fig, filename=filename, auto_open=False)
 
 
