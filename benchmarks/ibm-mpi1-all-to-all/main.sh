@@ -14,11 +14,16 @@ fi
 eval ${load_mpi}
 
 echo "Running benchmark..."
-echo "mpirun -ppn $SLURM_CPUS_ON_NODE IMB-MPI1 alltoall 2>&1 | tee all-to-all.out"
-mpirun -ppn $SLURM_CPUS_ON_NODE IMB-MPI1 alltoall | tee all-to-all.out
+mkdir results
+echo "mpirun -ppn $SLURM_CPUS_ON_NODE IMB-MPI1 alltoall 2>&1 | tee results/all-to-all.out"
+mpirun -ppn $SLURM_CPUS_ON_NODE IMB-MPI1 alltoall | tee results/all-to-all.out
 
 # Stream output file to PW
-cat all-to-all.out | ssh ${resource_ssh_usercontainer_options} usercontainer  "cat >> \"${pw_job_dir}/logs.out\""
+cat results/all-to-all.out | ssh ${resource_ssh_usercontainer_options} usercontainer  "cat >> \"${pw_job_dir}/logs.out\""
+
+# Plot and clean results
+pip3 install pandas matplotlib plotly
+python3 plot-imb-mpi-benchmark.py results/all-to-all.out 
 
 # Transfer output to platform
-rsync -avzq -e "ssh ${resource_ssh_usercontainer_options}" all-to-all.out usercontainer:${pw_job_dir}/all-to-all.out
+rsync -avzq -e "ssh ${resource_ssh_usercontainer_options}" results usercontainer:${pw_job_dir}
