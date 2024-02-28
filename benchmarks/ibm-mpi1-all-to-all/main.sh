@@ -25,5 +25,14 @@ cat results/all-to-all.out | ssh ${resource_ssh_usercontainer_options} userconta
 pip3 install pandas matplotlib plotly
 python3 benchmarks/${benchmark}/plot-imb-mpi-benchmark.py results/all-to-all.out 
 
+# Create HTML to display results
+rm -f results/result.html
+echo '<body style="background:white;">' > results/result.html.tmp
+find "results" -type f -name "*.html" | while read -r file; do
+    echo "<iframe style=\"width:40%;height:100%;border:0px;display:inline-block;position:relative\" src=\"/me/3001/api/v1/display/${pw_job_dir}/${file}\"></iframe>" >> results/result.html.tmp
+done
+echo '</body>' >> results/result.html.tmp
+mv results/result.html.tmp results/result.html
+
 # Transfer output to platform
 rsync -avzq -e "ssh ${resource_ssh_usercontainer_options}" results usercontainer:${pw_job_dir}
