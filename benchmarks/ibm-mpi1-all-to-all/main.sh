@@ -23,7 +23,7 @@ cat results/all-to-all.out | ssh ${resource_ssh_usercontainer_options} userconta
 
 # Plot and clean results
 pip3 install pandas matplotlib plotly
-python3 plot-imb-mpi-benchmark.py results/all-to-all.out 
+python3 benchmarks/${benchmark}/plot-imb-mpi-benchmark.py results/all-to-all.out 
 
 # Transfer output to platform
 rsync -avzq -e "ssh ${resource_ssh_usercontainer_options}" results usercontainer:${pw_job_dir}
