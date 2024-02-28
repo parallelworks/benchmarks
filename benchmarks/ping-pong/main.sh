@@ -15,15 +15,15 @@ eval ${load_mpi}
 
 echo "Running benchmark..."
 mkdir results
-echo "mpirun -ppn $SLURM_CPUS_ON_NODE IMB-MPI1 alltoall | tee results/all-to-all.out"
-mpirun -ppn $SLURM_CPUS_ON_NODE IMB-MPI1 alltoall | tee results/all-to-all.out
+echo "mpirun -np $SLURM_CPUS_ON_NODE IMB-MPI1 pingpong | tee results/ping-pong.out"
+mpirun -np $SLURM_CPUS_ON_NODE IMB-MPI1 pingpong  | tee results/ping-pong.out
 
 # Stream output file to PW
-cat results/all-to-all.out | ssh ${resource_ssh_usercontainer_options} usercontainer  "cat >> \"${pw_job_dir}/logs.out\""
+cat results/ping-pong.out | ssh ${resource_ssh_usercontainer_options} usercontainer  "cat >> \"${pw_job_dir}/logs.out\""
 
 # Plot and clean results
 pip3 install pandas matplotlib plotly
-python3 benchmarks/${benchmark}/plot-imb-mpi-benchmark.py results/all-to-all.out 
+python3 benchmarks/${benchmark}/plot-imb-mpi-benchmark.py results/ping-pong.out
 
 # Create HTML to display results
 rm -f results/result.html

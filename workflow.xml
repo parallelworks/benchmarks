@@ -9,6 +9,7 @@
       help=''   
       multiple='false'>
           <option value="ibm-mpi1-all-to-all" selected="true">ibm-mpi1-all-to-all</option>
+          <option value="ping-pong" >ping-pong</option>
           <option value="ior-standard">ior-standard</option>
           <option value="ior-minimal">ior-minimal</option>
           <option value="mdtest-standard">mdtest-standard</option>
