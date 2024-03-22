@@ -9,6 +9,7 @@
       help=''   
       multiple='false'>
           <option value="ibm-mpi1-all-to-all" selected="true">ibm-mpi1-all-to-all</option>
+          <option value="ping-pong" >ping-pong</option>
           <option value="ior-standard">ior-standard</option>
           <option value="ior-minimal">ior-minimal</option>
           <option value="mdtest-standard">mdtest-standard</option>
@@ -57,7 +58,7 @@
         label='Install Intel-OneAPI-MPI?' 
         help='If yes is selected, the job install intel-oneapi-mpi. Otherwise, you must provide a command to load MPI.'
         depends_on='benchmark'
-        show_if="['ior-standard', 'ior-minimal', 'mdtest-standard', 'mdtest-minimal', 'ibm-mpi1-all-to-all']"
+        show_if="['ior-standard', 'ior-minimal', 'mdtest-standard', 'mdtest-minimal', 'ibm-mpi1-all-to-all', 'ping-pong']"
       ></param>
       <param name='load_mpi' 
         label='Command to load MPI' 
@@ -85,9 +86,9 @@
         min="1" 
         max="100" 
         help='--ntasks-per-node=value slurm directive' 
-        value='4'
+        value='2'
         depends_on='benchmark'
-        show_if="['ior-standard', 'ior-minimal', 'mdtest-standard', 'mdtest-minimal', 'ibm-mpi1-all-to-all']"
+        show_if="['ior-standard', 'ior-minimal', 'mdtest-standard', 'mdtest-minimal', 'ibm-mpi1-all-to-all', 'ping-pong']"
     ></param>
     <param 
         name='_sch__dd_nodes_e_' 
@@ -96,9 +97,9 @@
         min="1" 
         max="100" 
         help='--nodes=value slurm directive' 
-        value='10'
+        value='1'
         depends_on='benchmark'
-        show_if="['ior-standard', 'ior-minimal', 'mdtest-standard', 'mdtest-minimal', 'ibm-mpi1-all-to-all']"
+        show_if="['ior-standard', 'ior-minimal', 'mdtest-standard', 'mdtest-minimal', 'ibm-mpi1-all-to-all', 'ping-pong']"
     ></param>
     </section>   
   </inputs>

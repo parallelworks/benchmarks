@@ -39,6 +39,10 @@ cat resources/host/inputs.sh >> benchmarks/${benchmark}/batch.sh
 cp utils/stream.sh benchmarks/${benchmark}/
 echo "bash ${resource_jobdir}/benchmarks/${benchmark}/stream.sh &" >> benchmarks/${benchmark}/batch.sh
 
+# Benchmark utils (common files useful to more than one benchmark)
+# - Copy to benchmark dir which is transferred to the resource
+cp benchmarks/utils/* benchmarks/${benchmark}/
+
 # Benchmark main script
 cat benchmarks/${benchmark}/main.sh >> benchmarks/${benchmark}/batch.sh
 
