@@ -70,6 +70,7 @@
       ></param>
       <param 
         name='_sch__dd_partition_e_' 
+        resource='pwrl_host.resource'
         label='SLURM partition' 
         type='dynamicPartitionDropdown' 
         help='Partition to submit the benchmark. Leave empty to let SLURM pick the optimal option.' 
