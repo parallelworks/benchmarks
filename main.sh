@@ -1,5 +1,4 @@
 #!/bin/bash
-source utils/workflow-libs.sh
 
 ############################################
 echo; echo; echo  PROCESSING RESOURCE INPUTS
@@ -8,15 +7,18 @@ source /etc/profile.d/parallelworks-env.sh
 source /pw/.miniconda3/etc/profile.d/conda.sh
 conda activate
 
-if [ -f "/swift-pw-bin/utils/input_form_resource_wrapper.py" ]; then
-    version=$(cat /swift-pw-bin/utils/input_form_resource_wrapper.py | grep VERSION | cut -d':' -f2)
-    if [ -z "$version" ] || [ "$version" -lt 15 ]; then
-        python utils/input_form_resource_wrapper.py
-    else
-        python /swift-pw-bin/utils/input_form_resource_wrapper.py
-    fi
+if [ -z "${workflow_utils_branch}" ]; then
+    # If empty, clone the main default branch
+    git clone https://github.com/parallelworks/workflow-utils.git
 else
-    python utils/input_form_resource_wrapper.py
+    # If not empty, clone the specified branch
+    git clone -b "$workflow_utils_branch" https://github.com/parallelworks/workflow-utils.git
+fi
+
+python workflow-utils/input_form_resource_wrapper.py
+
+if [ $? -ne 0 ]; then
+    displayErrorMessage "ERROR - Resource wrapper failed"
 fi
 
 if ! [ -f "resources/host/inputs.sh" ]; then
@@ -24,6 +26,7 @@ if ! [ -f "resources/host/inputs.sh" ]; then
     exit 1
 fi
 
+source workflow-utils/workflow-libs.sh
 source resources/host/inputs.sh
 
 ########################################################
@@ -36,7 +39,7 @@ cat resources/host/inputs.sh >> benchmarks/${benchmark}/batch.sh
 
 # Streaming
 # - Copy to benchmark dir which is transferred to the resource
-cp utils/stream.sh benchmarks/${benchmark}/
+cp workflow-utils/stream.sh benchmarks/${benchmark}/
 echo "bash ${resource_jobdir}/benchmarks/${benchmark}/stream.sh &" >> benchmarks/${benchmark}/batch.sh
 
 # Benchmark utils (common files useful to more than one benchmark)
