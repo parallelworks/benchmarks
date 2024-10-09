@@ -36,7 +36,6 @@
         help='The benchmark is executed in a subdirectory within the selected root directory' 
         depends_on='benchmark'
         show_if="['ior-standard', 'ior-minimal', 'mdtest-standard', 'mdtest-minimal']"
-        required="true"
       ></param>
       <param 
         name='with_lustre' 
@@ -67,7 +66,7 @@
         help='To load the MPI environment, enter the appropriate command, for example: module load module-name or source path/to/env.sh.' 
         depends_on='pwrl_host.spack_install_intel_mpi'
         show_if="false"
-        required="true"
+        optional="false"
       ></param>
       <param 
         name='_sch__dd_partition_e_' 
