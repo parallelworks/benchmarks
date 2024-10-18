@@ -48,6 +48,7 @@
         depends_on='benchmark'
         show_if="['ior-standard', 'ior-minimal', 'mdtest-standard', 'mdtest-minimal']"
         default='False'
+        optional="true"
       ></param>
       <param 
         name='spack_install_intel_mpi' 
@@ -60,6 +61,7 @@
         help='If yes is selected, the job install intel-oneapi-mpi. Otherwise, you must provide a command to load MPI.'
         depends_on='benchmark'
         show_if="['ior-standard', 'ior-minimal', 'mdtest-standard', 'mdtest-minimal', 'ibm-mpi1-all-to-all', 'ping-pong']"
+        optional="true"
       ></param>
       <param name='load_mpi' 
         label='Command to load MPI' 
