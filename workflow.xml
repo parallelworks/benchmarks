@@ -47,6 +47,7 @@
         help='If yes is selected, the IOR benchmark is compiled with lustre'
         depends_on='benchmark'
         show_if="['ior-standard', 'ior-minimal', 'mdtest-standard', 'mdtest-minimal']"
+        default='False'
       ></param>
       <param 
         name='spack_install_intel_mpi' 
@@ -54,6 +55,7 @@
         truevalue='Yes' 
         falsevalue='No' 
         checked='True'
+        default='True'
         label='Install Intel-OneAPI-MPI?' 
         help='If yes is selected, the job install intel-oneapi-mpi. Otherwise, you must provide a command to load MPI.'
         depends_on='benchmark'
@@ -66,7 +68,7 @@
         help='To load the MPI environment, enter the appropriate command, for example: module load module-name or source path/to/env.sh.' 
         depends_on='pwrl_host.spack_install_intel_mpi'
         show_if="false"
-        optional="false"
+        optional="true"
       ></param>
       <param 
         name='_sch__dd_partition_e_' 
