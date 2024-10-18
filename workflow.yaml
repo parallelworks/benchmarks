@@ -1,0 +1,212 @@
+jobs:
+  validate_resource:
+    steps:
+      - name: Validating Target Resource
+        run: |
+          git clone https://github.com/parallelworks/workflow-utils.git
+          source /etc/profile.d/parallelworks.sh
+          source /etc/profile.d/parallelworks-env.sh
+          source /pw/.miniconda3/etc/profile.d/conda.sh
+          conda activate
+          python workflow-utils/input_form_resource_wrapper.py
+          if ! [ -f "resources/host/inputs.sh" ]; then
+            echo "ERROR - Missing file ./resources/host/inputs.sh - Resource wrapper failed" >&2
+            exit 1
+          fi
+  submit_benchmark:
+    needs: 
+      - validate_resource
+    steps:
+
+      - name: Creating Job Script
+        run: |
+          source resources/host/inputs.sh
+          source workflow-utils/workflow-libs.sh
+          echo; echo; echo CREATING JOB SCRIPT ${PWD}/benchmark.sh
+          # SLURM / PBS header created by input_form_resource_wrapper.py
+          cat resources/host/batch_header.sh > benchmarks/${benchmark}/batch.sh
+          # Input variables created by input_form_resource_wrapper.py from inputs.json
+          cat resources/host/inputs.sh >> benchmarks/${benchmark}/batch.sh
+          # Benchmark main script
+          cat benchmarks/${benchmark}/main.sh >> benchmarks/${benchmark}/batch.sh
+      - name: Transferring Benchmark Directory to Cluster
+        run: |
+          source resources/host/inputs.sh
+          # Benchmark utils (common files useful to more than one benchmark)
+          # - Copy to benchmark dir which is transferred to the resource
+          cp benchmarks/utils/* benchmarks/${benchmark}/
+          # Transfer benchmark directory to the resource's job directory
+          rsync -avzq -e 'ssh -o StrictHostKeyChecking=no' --rsync-path="mkdir -p ${resource_jobdir}/benchmarks/ && rsync" benchmarks/${benchmark} ${resource_publicIp}:${resource_jobdir}/benchmarks/
+      - name: Submitting Benchmark Job 
+        run: |
+          source resources/host/inputs.sh 
+          export sshcmd="ssh -o StrictHostKeyChecking=no ${resource_publicIp}" 
+          jobid=$($sshcmd ${submit_cmd} ${resource_jobdir}/benchmarks/${benchmark}/batch.sh | tail -1 | awk -F ' ' '{print $4}')
+          if [ -z "${jobid}" ]; then
+            echo "ERROR submitting job - exiting the workflow" >&2 
+            exit 1 
+          fi
+          echo Job ID ${jobid}
+          echo ${jobid} >> jobid
+  wait_job:
+    needs: 
+      - submit_benchmark
+    steps:
+      - name: Wait for SLURM Job
+        run: |
+          source resources/host/inputs.sh 
+          export sshcmd="ssh -o StrictHostKeyChecking=no ${resource_publicIp}" 
+          jobid=$(cat jobid)
+          
+          get_slurm_job_status() {
+            # Get the header line to determine the column index corresponding to the job status
+            if [ -z "${SQUEUE_HEADER}" ]; then
+              export SQUEUE_HEADER="$(eval "$sshcmd squeue" | awk 'NR==1')"
+            fi
+            status_column=$(echo "${SQUEUE_HEADER}" | awk '{ for (i=1; i<=NF; i++) if ($i ~ /^S/) { print i; exit } }')
+            status_response=$(eval $sshcmd squeue | grep "\<${jobid}\>")
+            echo "${SQUEUE_HEADER}"
+            echo "${status_response}"
+            export job_status=$(echo ${status_response} | awk -v id="${jobid}" -v col="$status_column" '{print $col}')
+          }
+
+          while true; do
+            # squeue won't give you status of jobs that are not running or waiting to run
+            get_slurm_job_status
+            # If job status is empty job is no longer running
+            if [ -z "${job_status}" ]; then
+              job_status=$($sshcmd sacct -j ${jobid}  --format=state | tail -n1)
+              break
+            fi
+            sleep 20
+          done
+
+          echo "completed=true" >> $OUTPUTS
+          touch completed
+        cleanup: |
+          set -x
+          source resources/host/inputs.sh 
+          export sshcmd="ssh -o StrictHostKeyChecking=no ${resource_publicIp}" 
+
+          if [[ "${{ needs.wait_job.outputs.completed }}" == "true" ]]; then
+              exit 0
+          fi
+
+          echo Cancelling Job
+          $sshcmd scancel ${jobid}
+  stream:
+    needs: 
+      - submit_benchmark
+    steps:
+      - name: stream
+        run: |
+          source resources/host/inputs.sh 
+          export sshcmd="ssh -o StrictHostKeyChecking=no ${resource_publicIp}" 
+          ${sshcmd} "touch ${resource_jobdir}/logs.out"
+          ${sshcmd} "tail -f ${resource_jobdir}/logs.out" &
+          echo $! >> stream.pid
+          while [ ! -f completed ]; do
+            sleep 5
+          done
+        cleanup: kill $(cat stream.pid)
+
+
+'on':
+  execute:
+    inputs:
+      header:
+        type: header
+        text: Benchmarks
+        size: 20
+      benchmark:
+        type: dropdown
+        label: Select Benchmark to Run
+        options:
+          - value: ibm-mpi1-all-to-all
+            label: ibm-mpi1-all-to-all
+          - value: ping-pong
+            label: ping-pong
+          - value: ior-standard
+            label: ior-standard
+          - value: ior-minimal
+            label: ior-minimal
+          - value: mdtest-standard
+            label: mdtest-standard
+          - value: mdtest-minimal
+            label: mdtest-minimal
+      pwrl_host:
+        type: group
+        label: Cluster
+        items:
+          resource:
+            type: compute-clusters
+            label: Service host
+            include-workspace: false
+            provider: 
+               - gclusterv2
+               - pclusterv2
+               - pclusterv2
+               - aws-slurm
+               - google-slurm
+               - azure-slurm
+            tooltip: Resource to host the service
+          jobschedulertype:
+            type: string
+            hidden: true
+            default: SLURM
+          benchmark_root_dir:
+            type: string
+            label: Root Directory to Run Benchmark
+            default: /home/__USER__/
+            hidden: ${{ inputs.benchmark !== 'ior-standard' && inputs.benchmark !== 'ior-minimal' && inputs.benchmark !== 'mdtest-standard' && inputs.benchmark !== 'mdtest-minimal' }}
+            ignore: ${{ .hidden }}
+            optional: ${{ .hidden }}
+            tooltip: The benchmark is executed in a subdirectory within the selected root directory.
+          with_lustre:
+            type: boolean
+            label: Compile with lustre?
+            default: true
+            hidden: ${{ inputs.benchmark !== 'ior-standard' && inputs.benchmark !== 'ior-minimal' && inputs.benchmark !== 'mdtest-standard' && inputs.benchmark !== 'mdtest-minimal' }}
+            ignore: ${{ .hidden }}
+            optional: ${{ .hidden }}
+          spack_install_intel_mpi:
+            type: boolean
+            label: Install Intel-OneAPI-MPI?
+            default: true
+            hidden: ${{ inputs.benchmark !== 'ior-standard' && inputs.benchmark !== 'ior-minimal' && inputs.benchmark !== 'mdtest-standard' && inputs.benchmark !== 'mdtest-minimal' && inputs.benchmark !== 'ibm-mpi1-all-to-all' && inputs.benchmark !== 'ping-pong'}}
+            ignore: ${{ .hidden }}
+            optional: ${{ .hidden }}
+            tooltip: If yes is selected, the job install intel-oneapi-mpi. Otherwise, you must provide a command to load MPI.
+          load_mpi:
+            type: string
+            label: Command to load MPI
+            hidden: ${{ inputs.pwrl_host.spack_install_intel_mpi == true || ( inputs.benchmark !== 'ior-standard' && inputs.benchmark !== 'ior-minimal' && inputs.benchmark !== 'mdtest-standard' && inputs.benchmark !== 'mdtest-minimal' && inputs.benchmark !== 'ibm-mpi1-all-to-all' && inputs.benchmark !== 'ping-pong') }}
+            ignore: ${{ .hidden }}
+            optional: ${{ .hidden }}
+            tooltip: To load the MPI environment, enter the appropriate command, for example, module load module-name or source path/to/env.sh.
+          _sch__dd_partition_e_:
+            type: slurm-partitions
+            label: SLURM partition
+            hidden: ${{ 'SLURM' !== inputs.pwrl_host.jobschedulertype }}
+            ignore: ${{ .hidden }}
+            optional: true
+            tooltip: Partition to submit the interactive job. Leave empty to let SLURM pick the optimal option.
+            resource: ${{ inputs.pwrl_host.resource }}
+          _sch__dd_ntasks_d_per_d_node_e_:
+            label: Number of tasks per node
+            type: number
+            min: 1
+            max: 100
+            default: 2
+            hidden: ${{ 'SLURM' !== inputs.pwrl_host.jobschedulertype }}
+            ignore: ${{ .hidden }}
+            tooltip: '--ntasks-per-node SLURM directive'
+          _sch__dd_nodes_e_:
+            label: Number of Nodes
+            type: number
+            min: 1
+            max: 100
+            default: 1
+            hidden: ${{ 'SLURM' !== inputs.pwrl_host.jobschedulertype }}
+            ignore: ${{ .hidden }}
+            tooltip: '--nodes SLURM directive'
